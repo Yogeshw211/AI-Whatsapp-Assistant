@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mumzworld AI Assistant</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --wa-green: #075E54;
+            --wa-light-green: #25D366;
+            --wa-bg: #E5DDD5;
+            --user-bubble: #DCF8C6;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--wa-bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 450px;
+            height: 90vh;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+       
+        .header {
+            background: var(--wa-green);
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-info { display: flex; align-items: center; gap: 10px; }
+        .status-dot { color: var(--wa-light-green); font-size: 12px; }
+
+      
+        #chat-box {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 14px;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .bot { align-self: flex-start; background: white; border-top-left-radius: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .user { align-self: flex-end; background: var(--user-bubble); border-top-right-radius: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+
+            .product-card {
+                background: #f9f9f9;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                padding: 15px; 
+                margin-top: 10px;
+                text-align: left; 
+            }
+        .product-card img { border-radius: 5px; margin-bottom: 8px; }
+        .product-card h3 { font-size: 16px; margin: 5px 0; color: #333; }
+
+       
+        .input-panel {
+            background: #f0f0f0;
+            padding: 15px;
+            border-top: 1px solid #ddd;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        input, select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            outline: none;
+            font-size: 13px;
+        }
+
+        .full-width { grid-column: span 2; }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: var(--wa-light-green);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:active {
+            transform: scale(0.98);
+            background: #128C7E;
+        }
+
+        button:hover { background: #1ebe57; }
+
+        #typing {
+            font-size: 12px;
+            color: var(--wa-green);
+            font-style: italic;
+            height: 15px;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="header">
+        <div class="header-info">
+            <span class="status-dot">●</span>
+            <strong>Mumzworld AI</strong>
+        </div>
+        <select id="location">
+            <option value="UAE">UAE (AED)</option>
+            <option value="KSA">KSA (SAR)</option>
+            <option value="QATAR">QATAR (QAR)</option>
+        </select>
+    </div>
+
+    <div id="chat-box">
+        <div class="message bot">
+            👋 Hi! I’m your Mumzworld assistant. Tell me what you're looking for, and I'll find the best match for your little one!
+        </div>
+    </div>
+
+    <div class="input-panel">
+        <div id="typing"></div>
+        <div class="controls-grid">
+            <input type="text" id="age" placeholder="Baby Age (e.g. 6 months)">
+            <input type="text" id="budget" placeholder="Max Budget">
+            <input type="text" id="purpose" class="full-width" placeholder="What do you need? (e.g. Toys, Diapers, Bath, Feeding)">
+        </div>
+        <button onclick="sendMessage()">Find Products</button>
+    </div>
+</div>
+
+<script>
+    function scrollToBottom() {
+        const chatBox = document.getElementById("chat-box");
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+    const inputs = ["age", "budget", "purpose"];
+    
+    inputs.forEach(id => {
+        const inputField = document.getElementById(id);
+        inputField.addEventListener("keydown", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault(); 
+                sendMessage(); 
+            }
+        });
+    });
+});
+
+    async function sendMessage() {
+        const age = document.getElementById("age").value.trim();
+        const budget = document.getElementById("budget").value.trim();
+        const purpose = document.getElementById("purpose").value.trim();
+        const country = document.getElementById("location").value;
+        const chatBox = document.getElementById("chat-box");
+        const typing = document.getElementById("typing");
+
+        if (!age || !budget || !purpose) {
+            alert("Please fill in all fields so I can help you better! 👶");
+            return;
+        }
+
+      
+        chatBox.innerHTML += `<div class="message user">I need a ${purpose} for a ${age} old. My budget is around ${budget}.</div>`;
+        scrollToBottom();
+
+        typing.innerText = "Searching Mumzworld...";
+
+        try {
+            const response = await fetch("http://127.0.0.1:8000/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ age, budget, purpose, country })
+            });
+
+            const data = await response.json();
+            typing.innerText = "";
+
+            if (data.products && data.products.length > 0) {
+                let productHtml = `<div class="message bot">Here are the best options for you in ${country}:<br>`;
+                
+                
+                    data.products.forEach(product => {
+                        productHtml += `
+                            <div class="product-card">
+                                <h3>${product.name}</h3>
+                                <p><strong>Price:</strong> ${product.price}</p>
+                                <p>⭐ ${product.rating || 'N/A'}</p>
+                                <p style="font-size: 12px; color: #666;">${product.description || ''}</p>
+                            </div>`;
+                    });
+                productHtml += `</div>`;
+                chatBox.innerHTML += productHtml;
+            } else {
+                chatBox.innerHTML += `<div class="message bot">I couldn't find exactly that. Try adjusting your budget or description!</div>`;
+            }
+        } catch (error) {
+            typing.innerText = "";
+            chatBox.innerHTML += `<div class="message bot">Sorry, I'm having trouble connecting to my brain. Is the server running? 😅</div>`;
+        }
+               
+        document.getElementById("purpose").value = "";
+        scrollToBottom();
+    }
+</script>
+
+</body>
+</html>
+
+
